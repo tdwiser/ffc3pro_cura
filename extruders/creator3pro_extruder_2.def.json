@@ -23,6 +23,7 @@
         "machine_extruder_end_pos_x": { "value": "-180" },
         "machine_extruder_end_pos_y": { "value": "120" },
 		"machine_extruder_start_code": { "default_value": "M108 T1 ; tool change\nG92 E0 ; reset extrusion distance" },
-		"machine_extruder_end_code": { "default_value": ""}
+		"machine_extruder_end_code": { "default_value": ""},
+		"machine_extruder_cooling_fan_number": { "value": 1 }
     }
 }

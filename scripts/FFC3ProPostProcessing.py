@@ -1,6 +1,6 @@
 # By Tim Wiser, 2022, inspired by ArteFlux and the PostProcessingPlugin from Ruben Dulek but significantly expanded
 
-import re 
+import re
 from ..Script import Script
 
 
@@ -24,26 +24,30 @@ class FFC3ProPostProcessing(Script):
         # Printer hangs if temperatures contain decimal points (really?)
         removeDecimal = re.compile(r"M(104|140) S([0-9]+)\.[0-9]+")
         removeDecimalSub = r"M\1 S\2"
-        
+
         # Always need to specify which tool, even if in single-extruder mode
         addToolToTemp = re.compile("(M104 S[0-9]{1,3})([^T]*)$")
         def addToolToTempSub(tool):
             return "\\1 T" + tool + "\\2"
-        
+
         # Also need to specify the tool on fan speed commands
         addToolToFan = re.compile("(M106 S[0-9.]+)([^T]*)$")
-        
+
+    # Don't need the P specification from Cura
+        removePFromFan = re.compile("(M106[^P]+)P[0-9](.*)")
+        removePFromFanSub = "\\1 \\2"
+
         # These don't seem to do anything
         commentUnnecessary = re.compile("(M10[59].*)$")
         commentUnnecessarySub = ";\\1"
-        
+
         # Yes, the order of T and S matters to Flashforge
         rewriteTemp = re.compile("M104 (T[01]) (S[0-9]+)")
         rewriteTempSub = "M104 \\2 \\1"
-        
+
         # Detect when tool is changed
         toolSwap = re.compile("^(M108 )?T([01])")
-        
+
         activeTool = ""
         newData = []
         for layer_number, layer in enumerate(data):
@@ -55,6 +59,7 @@ class FFC3ProPostProcessing(Script):
                 newLine = removeDecimal.sub(removeDecimalSub, line)
                 newLine = addToolToTemp.sub(addToolToTempSub(activeTool), newLine)
                 newLine = addToolToFan.sub(addToolToTempSub(activeTool), newLine)
+                newLine = removePFromFan.sub(removePFromFanSub, newLine)
                 newLine = commentUnnecessary.sub(commentUnnecessarySub, newLine)
                 newLine = rewriteTemp.sub(rewriteTempSub, newLine)
                 newLayer.append(newLine)
